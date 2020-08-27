@@ -12,10 +12,10 @@ This is a list of useful models and links to corresponding xpp files
 
 ### Beta-Cell Models
 
-* [Cha-Noma](ChaNoma.ode) (Cha et al, J. Gen. Physiol. 2011 138(1):21-37)
-* [Insulin Phantom](insburst2.ode) (Bertram et al, in "Recent Research Developments in Biophysics", S. G. Pandalai, ed., Transworld Research Network, Vol. 1, pp. 31-51.)
+* [Insulin Phantom](insburst2.ode) (Bertram et al, 2002, in "Recent Research Developments in Biophysics", S. G. Pandalai, ed., Transworld Research Network, Vol. 1, pp. 31-51.)
 * [Fridlyand 1](Fridlyand03.ode) (Fridlyand et al, Am J Physiol Endocrinol Metab 2003 285(1):E138-54)
 * [Fridlyand 2](Fridlyand05.ode) (Fridlyand et al, Am J Physiol Endocrinol Metab 2005 289(5):E839-48)
+* [Cha-Noma](ChaNoma.ode) (Cha et al, J. Gen. Physiol. 2011 138(1):21-37)
 
 ### Other Models
 
