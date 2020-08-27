@@ -1,0 +1,90 @@
+#fridlyand's 1st model
+# AJP  285(1):E138-54 2003 
+
+#initial conditions
+init n=0.00123, ip3=0.33, v=-60.9, cai=0.085, caer=22.8, ni=9858.0, atp=932.0
+
+#parameters
+par gmkatp=24000.0
+par b6_1=6.0e-7, ki=132400.0, 
+par krca=0.077
+par vcran=0.0, b4_1=2.0e-4, p=4950.0
+par b3_1=1.72e-17
+par no=140000.0, gmna=1200.0
+par f6=11.5, f4_1=1.5e-8, f3=0.172
+par f2=10.0, f1_1=2.5e-10, kdip=4.0e-5, gnaca=271.0
+par ktt=1.0, kkca=0.1, ko=8000.0, pleak=1.0e-4
+par ktd=26.0, kadp=3.7e-4, ver=0.28, pmcap=2000.0
+par gmvca=770.0, kip=3.0e-4, mb5=0.03, kip3=3.2
+par ksg=1.0e-4, vt=-75.0, gmkdr=3000.0, vn=-14.0
+par knaca=0.75, c=20.0, kcarp=0.5, b=20.0
+par a=65.0, vi=0.764, pnak=600.0
+par kcar=200.0, kcap=0.1
+par pip3=0.0012, cm=6158.0
+par cao=2500.0, kcah=9.5
+par f=96480.0, gmkca=130.0
+par katp=5.0e-5, gmcran=0.7, katpca=5.0e-5
+par mf5=0.0020, fer=0.03, b2_1=1.0e-4
+par b1=100.0, vcah=-19.0, ao=4000.0
+par kipca=0.4, kdd=17.0, fi=0.01
+par rtdf=26.73, sn=7.0, pcaer=0.105
+
+#functions
+b2=b2_1*adp
+b6=b6_1*ki*ki
+b4=b4_1*p
+b3=b3_1*no*no*no
+f4=f4_1*ko*ko
+f1=f1_1*ni*ni*ni
+pvca=1.0/(1.0+exp(((vcah-v)/kcah)))
+adp=ao-atp
+icapump=pmcap*cai*cai/((cai*cai)+(kcap*kcap))
+okatp=((0.08*(1.0+(0.33*adp/kdd)))+(0.02423025*adp*adp/kdd/kdd))/((1.0+(0.165*adp/kdd))*(1.0+(0.165*adp/kdd))*(1.0+(0.135*adp/ktd)+(0.05*atp/ktt)))
+vk=rtdf*ln((ko/ki))
+ikatp=gmkatp*okatp*(v-vk)
+vna=rtdf*ln(no/ni)
+f5_1=mf5*exp((v/(2.0*rtdf)))
+f5=f5_1*atp
+ikca=gmkca*(v-vk)*cai*cai*cai*cai/((kkca*kkca*kkca*kkca)+(cai*cai*cai*cai))
+b5=mb5*exp(-(v/(2.0*rtdf)))
+d=((f2*f3*f4*f5*f6)+(b1*f3*f4*f5*f6)+(b1*b2*f4*f5*f6)+(b1*b2*b3*f5*f6)+(b1*b2*b3*b4*f6)+(b1*b2*b3*b4*b5))
+inak=(pnak*((f1*f2*f3*f4*f5*f6)-(b1*b2*b3*b4*b5*b6))/d)
+vnaca=(rtdf*((3.0*ln((no/ni)))-ln((cao/cai))))
+icran=-((v-vna)*(v-vcran)*gmcran/(1.0+exp((0.33*(caer-kcar)))))
+ina=(gmna*(v-vna)/(1.0+exp((0.125*(104.0+v)))))
+tn=(c/(exp(((v-vt)/a))+exp(((vt-v)/b))))
+nb=(1.0/(1.0+exp(((vn-v)/sn))))
+jerp=(pcaer*cai*cai/((cai*cai)+(kcarp*kcarp)))
+vca=(0.5*ln((cao/cai))*rtdf)
+ivca=(gmvca*pvca*(v-vca))
+inaca=(gnaca*(v-vnaca)*cai*cai*cai*cai*cai/((knaca*knaca*knaca*knaca*knaca)+(cai*cai*cai*cai*cai)))
+jout=((pleak+(pip3*cai*ip3*ip3*ip3/(cai+krca)/((ip3*ip3*ip3)+(kip3*kip3*kip3))))*(caer-cai))
+ikdr=(gmkdr*n*(v-vk))
+
+#differential equations
+n'=(nb-n)/tn
+ip3'=(kip*cai*cai/((cai*cai)+(kipca*kipca)))-(kdip*ip3)
+v'=-(ivca+icapump+inaca+icran+ina+inak+ikdr+ikca+ikatp)/cm
+cai'=(fi*(((-ivca+(2.0*inaca)-(2.0*icapump))/(2.0*f*vi))-jerp+(jout/vi)))-(ksg*cai)
+caer'=fer*((jerp*vi)-jout)/ver
+ni'=(-(3.0*inaca)-(3.0*inak)-ina-icran)/(f*vi)
+atp'=-(0.5*jerp)-((katp+(katpca*cai))*atp)+(kadp*adp)-((inak+icapump)/(f*vi))
+
+aux tsec=t/1000.0
+aux tmin=t/60000.0
+aux Inak=inak
+aux Inaca=Inaca
+aux Ina=ina
+aux Ica=ivca
+aux Icapump=icapump
+aux Ikca=ikca
+aux Icran=icran
+aux Ikdr=ikdr
+aux Inatot=-(3.0*inaca)-(3.0*inak)-ina-icran
+aux gkatp=gmkatp*okatp
+
+@ meth=qualrk,dt=50,total=8e5,maxstor=1000000
+@ bounds=100000000,xp=tsec,yp=v,toler=1.0e-7,atoler=1.0e-7
+@ xlo=0,xhi=800,ylo=-80,yhi=0
+
+done

@@ -1,0 +1,86 @@
+#fridlyand's 2nd model
+# AJP 289 (5): E839 2005
+
+
+#initial conditions
+init Cai=0.107,Caer=34.3,n=0.0021
+init ADPb=922.0,V=-57.0,Ni=7281.0
+init ADPf=92.2,IP3=0.5,Re=1260.0,ATP=2985.0
+
+#parameters
+par gmKATP=24000.0
+par KCah=9.5,kATPCa=8.0E-5,VCRAN=0.0,kATP=5.0E-5
+par gmCRAN=0.7,mf5=0.0020,gmVCa=670.0,kdd=17.0
+par f44=1.5E-8,Ko=8000.0
+par gmNa=1200.0,KIPCa=0.4
+par Cm=6158.0,Pleak=1.0E-4,ksg=1.0E-4
+par KmATP=500.0,KKCa=0.1,No=140000.0,VCah=-19.0,kIP=3.0E-4
+par hgl=1.7,mb5=0.03,Ao=4000.0
+par KCarp=0.5,fi=0.01,KIP3=3.2,b33=1.72E-17
+par b66=6.0E-7,Ki=132400.0,b44=2.0E-4,P=4950.0
+par Kop=20.0,Kdip=4.0E-5,kADPf=2.0E-4,kADPb=2.0E-5
+par PIP3=0.0012,PNaK=600.0,gmKDr=3000.0,fer=0.03
+par f6=11.5,f3=0.172,f2=10.0,f11=2.5E-10
+par Gluo=8.0,Kg=7.0,KNaCa=0.75,gmKCa=130.0
+par RTdF=26.73,Vt=-75.0,c=20.0,Ver=0.28
+par b=20.0,Cao=2600.0,a=65.0,Vn=-14.0
+par Vi=0.764,PCaER=0.105,gNaCa=271.0,PmCap=2000.0
+par F=96480.0,KRCa=0.077,ktt=50.0,Pglu=0.025
+par ktd=26.0,KRe=31.0,b22=1.0E-4,b1=100.0
+par Pop=2.0E-4,KCar=200.0,Sn=7.0,KCap=0.1
+
+#functions
+F4 = (f44 * Ko * Ko)
+B6 = (b66 * Ki * Ki)
+B4 = (b44 * P)
+B3 = (b33 * No * No * No)
+F1 = (f11 * Ni * Ni * Ni)
+f55 = (mf5 * exp((V / (2.0 * RTdF))))
+F5 = (f55 * ATP)
+B2 = (b22 * (Ao - ATP))
+b5 = (mb5 * exp( - (V / (2.0 * RTdF))))
+D = ((f2 * f3 * F4 * F5 * f6) + (b1 * f3 * F4 * F5 * f6) + (b1 * B2 * F4 * F5 * f6) + (b1 * B2 * B3 * F5 * f6) + (b1 * B2 * B3 * B4 * f6) + (b1 * B2 * B3 * B4 * b5))
+INaK = (PNaK * ((F1 * f2 * f3 * F4 * F5 * f6) - (b1 * B2 * B3 * B4 * b5 * B6)) / D)
+Jerp = (PCaER * Cai * Cai / ((Cai * Cai) + (KCarp * KCarp)))
+VNaCa = (RTdF * ((3.0 * log((No / Ni))) - log((Cao / Cai))))
+INaCa = (gNaCa * (V - VNaCa) * Cai * Cai * Cai * Cai * Cai / ((KNaCa * KNaCa * KNaCa * KNaCa * KNaCa) + (Cai * Cai * Cai * Cai * Cai)))
+VNa = (RTdF * log((No / Ni)))
+INa = (gmNa * (V - VNa) / (1.0 + exp((0.125 * (104.0 + V)))))
+tn = (c / (exp(((V - Vt) / a)) + exp(((Vt - V) / b))))
+PVCa = (1.0 / (1.0 + exp(((VCah - V) / KCah))))
+VCa = (0.5 * log((Cao / Cai)) * RTdF)
+IVCa = (gmVCa * PVCa * (V - VCa))
+MgADP = (0.55 * ADPf)
+OKATP = (((0.08 * (1.0 + (2.0 * MgADP / kdd))) + (0.89 * MgADP * MgADP / kdd / kdd)) / ((1.0 + (MgADP / kdd)) * (1.0 + (MgADP / kdd)) * (1.0 + (0.45 * MgADP / ktd) + (ATP / ktt))))
+VK = (RTdF * log((Ko / Ki)))
+IKATP = (gmKATP * OKATP * (V - VK))
+ICRAN =  - ((V - VNa) * (V - VCRAN) * gmCRAN / (1.0 + exp((0.3333333333333333 * (Caer - KCar)))))
+JOP = (Pop * Re * MgADP * MgADP / ((MgADP * MgADP) + (Kop * Kop)))
+Jout = ((Pleak + (PIP3 * Cai * IP3 * IP3 * IP3 / (Cai + KRCa) / ((IP3 * IP3 * IP3) + (KIP3 * KIP3 * KIP3)))) * (Caer - Cai))
+IKDr = (gmKDr * n * (V - VK))
+ICapump = (PmCap * Cai * Cai / ((Cai * Cai) + (KCap * KCap)))
+nb = (1.0 / (1.0 + exp(((Vn - V) / Sn))))
+JGlu = (Pglu * ATP * (Gluo ^ hgl) / (KmATP + ATP) / ((Kg ^ hgl) + (Gluo ^ hgl)))
+IKCa = (gmKCa * (V - VK) * Cai * Cai * Cai * Cai / ((KKCa * KKCa * KKCa * KKCa) + (Cai * Cai * Cai * Cai)))
+
+#differential equations
+V' = - ((IVCa + ICapump + INaCa + ICRAN + INa + INaK + IKDr + IKCa + IKATP) / Cm)  
+Cai' = ((fi * ((( - IVCa + (2.0 * INaCa) - (2.0 * ICapump)) / (2.0 * F * Vi)) - Jerp + (Jout / Vi))) - (ksg * Cai)) 
+ADPf' = ((kADPb * ADPb) - JOP - (kADPf * ADPf) + ((INaK + ICapump) / (F * Vi)) + (0.5 * Jerp) + ((kATP + (kATPCa * Cai)) * ATP))        
+Re' = ((KRe * JGlu) - JOP)    
+IP3' = ((kIP * Cai * Cai / ((Cai * Cai) + (KIPCa * KIPCa))) - (Kdip * IP3))    
+Ni' = (( - (3.0 * INaCa) - (3.0 * INaK) - INa - ICRAN) / (F * Vi))   
+Caer' = (fer * ((Jerp * Vi) - Jout) / Ver)    
+n' = ((nb - n) / tn)   
+ADPb' = ((kADPf * ADPf) - (kADPb * ADPb))    
+ATP' = ( - (0.5 * Jerp) - ((kATP + (kATPCa * Cai)) * ATP) + JOP - ((INaK + ICapump) / (F * Vi)))    
+
+
+aux tsec=t/1000.0
+aux gkatp=gmKATP*OKATP
+
+@ meth=cvode,dt=50,total=8e5,maxstor=1000000
+@ bounds=100000000,xp=tsec,yp=v,toler=1.0e-7,atoler=1.0e-7
+@ xlo=0,xhi=800,ylo=-80,yhi=0
+
+done
