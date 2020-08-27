@@ -1,0 +1,123 @@
+# insburst2.ode
+#
+# A burster model with K(Ca) as the s1 variable. Insulin feeds back on K(ATP)
+# (with ATP fixed), activating the channel.
+# There is also an ER, based on Mears et al. The nonlinear SERCA pump
+# has been replaced by a linear pump.
+# Recently modified so that Ca feels only Ca component of I_CRAC (10/9/00).
+# The ratio f has been factored out of lambdaer and sigmaer (10/9/00). These
+# parameters have been renamed. 
+# In this version the "s" variable has dynamics and is the s2 phantom variable.
+
+v(0)=-61
+n(0)=0
+c(0)=0.1
+cer(0)=70
+in(0)=0.5
+s(0)=0.51
+
+# Conductances in pS; currents in fA; Ca concentrations in uM; time in ms
+
+# Ik(ATP) 
+par gkatpbar=210, gin=45, hill=0.5
+# Ikca (1000 = fast , 210 = medium, 190 = slow)
+par gkca=190
+# Icrac
+par cerbar=40, gcracbar=0, gcracca=0
+# Chloride current
+par gcl=0
+# Ca parameters  (sigmaa=ER area/PM area) (sigmav=ER volume/cyto. volume)
+par sigmav=0.01, ip3=0, kserca=0.4
+# Insulin secretion parameters. (modified from insburst.ode)
+par kpin=0.005, kmin=0.0005
+
+# AUTO parameters
+par autoc=1, cknot=0.1, autocer=1, cerknot=50
+
+# Invisible parameters
+# Ik
+number vn=-16, sn=5.6, vk=-75, taun=20, gk=3000
+# Ica
+number vca=25, vm=-20, sm=12, gca=1200
+# Ikca
+number nh=5, kd=0.3
+# Icrac
+par vcrac=0, vcracca=25
+number sloper=3
+# Icl
+number vcl=-26
+# Miscellaneous
+number cm=5300, iapp=0, lambda=1.25
+# Calcium Handling: cytosol (alpha and kc have been reduced by half)
+par f=0.01
+number alpha=2.250e-6, kc=0.1, fer=0.1
+# par alpha=2.25e-6, kmp=0.5, vmp=0.15, f=0.01
+# Calcium Handling: ER
+# number kserca=1,perl=0.003    modified from Mears
+number sigmaa=0.4, perl=0.0005
+number dact=0.35, dip3=0.5, dinh=0.4
+
+# s parameters
+par taus=120000.0
+
+# Functions
+
+sinf = in/(hill+in)
+# gkatp = gkatpbar+gin*sinf   ! original
+gkatp = gkatpbar+gin*s
+sigmaf=fer/f
+ninf = 1/(1+exp((vn-v)/sn))
+minf = 1/(1+exp((vm-v)/sm))
+omega = 1/(1+(kd/c)^nh)
+ica = gca*minf*(v-vca)
+ikca = gkca*omega*(v-vk)
+ikatp = gkatp*(v-vk)
+icrac = gcracbar*cracact*(v-vcrac)
+icracca = gcracca*cracact*(v-vcracca)
+ik = gk*n*(v-vk)
+icl = gcl*(v-vcl)
+
+# Expressions
+
+cracact = 1/(1+exp((cer-cerbar)/sloper))
+
+% ER functions
+
+% ER parameters
+ainf = 1/(1 + dact/c)
+hinfer = 1/(1 + c/dinh)
+# jerp = verp*(c^2)/(c^2 + kerp^2)
+jerp = kserca*c
+binf = ip3/(ip3 + dip3)
+o = ainf^3*binf^3*hinfer^3
+
+% Ca fluxes
+jmemtot = -f*(alpha*(ica+icracca) + kc*c)
+# jmp = vmp*(c^2)/(c^2 + kmp^2)
+# jmemtot = -f*( alpha*(ica+icrac) + jmp )
+jerleak = perl*(cer - c)
+jerip3 = o*(cer - c)
+jertot = f*(jerleak + jerip3 - jerp)
+% remove ER
+% jertot = 0
+
+# Equations
+
+v' = (-ica - ik - ikatp  - ikca - icrac - icl + iapp)/cm
+n' =  lambda*(ninf - n)/taun
+c' = autoc*(sigmaa*jertot + jmemtot) + (1-autoc)*(cknot-c)
+cer' = autocer*(-sigmaf*(sigmaa/sigmav)*jertot) + (1-autocer)*(cerknot-cer)
+in' = kpin*c - in*(kpin*c+kmin)
+s' = (sinf-s)/taus
+
+@ meth=cvode, toler=1.0e-10, atoler=1.0e-10, dt=20.0, total=60000, maxstor=20000
+@ bounds=10000000, xp=t, yp=v
+@ xlo=0, xhi=60000, ylo=-70, yhi=-10
+
+# aux itot=(ica + ik + ikatp  + ikca + icrac)/1000
+aux w=omega
+aux Icrac=icrac
+aux Icracca=icracca
+
+done
+
