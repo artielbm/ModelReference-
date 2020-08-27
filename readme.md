@@ -7,8 +7,8 @@ This is a list of useful models and links to corresponding xpp files
 * [Integrate and Fire](if.ode)
 * [Wilson-Cowan](wilcow.ode) (Wilson and Cowan,1972, BJ 12:2-24; Borisyuk and Kirillov, 1992, Biol. Cyb. 66:319-325)
 * [Hodgkin-Huxley](hh.ode)
-* [Reduced Hodgin-Huxley](hhred.ode)
-* [Dopamine Neuron](dopa.ode)
+* [Reduced Hodgin-Huxley](hhred.ode) ("Fitzhugh-Rinzel")
+* [Dopamine Neuron](dopa.ode) (Li, Bertram and Rinzel, Neuroscience 1996 71(2):397-410)
 
 ### Beta-Cell Models
 
